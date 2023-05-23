@@ -1,0 +1,43 @@
+{
+    "name": "nmc/laravel-cloud-tasks",
+    "description": "This is my package LaravelCloudTask",
+    "keywords": [
+        "nmc",
+        "laravel",
+        "laravel-cloud-tasks"
+    ],
+    "homepage": "https://github.com/nmc/laravel-cloud-tasks",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fitim Vata",
+            "email": "fitimvata28@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1|^8.2",
+        "google/apiclient": "^2.15",
+        "google/cloud-tasks": "^1.11",
+        "illuminate/contracts": "^9.0|^10.0",
+        "spatie/laravel-package-tools": "^1.14.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nmc\\CloudTasks\\": "src"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nmc\\CloudTasks\\CloudTasksServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
