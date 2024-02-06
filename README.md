@@ -1,4 +1,4 @@
-# This is my package LaravelCloudTask
+# Google Cloud Tasks For Laravel
 
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/nmc/laravel-cloud-tasks.svg?style=flat-square)](https://packagist.org/packages/nmc/laravel-cloud-tasks)
