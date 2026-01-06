@@ -2,7 +2,7 @@
 
 namespace Nmc\CloudTasks;
 
-use Google\Cloud\Tasks\V2\CloudTasksClient;
+use Google\Cloud\Tasks\V2\Client\CloudTasksClient;
 use Illuminate\Http\Request;
 
 class CloudTasksJobParams

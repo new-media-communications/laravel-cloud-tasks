@@ -3,9 +3,11 @@
 namespace Nmc\CloudTasks;
 
 use Google\ApiCore\ApiException;
+use Google\Cloud\Tasks\V2\CreateTaskRequest;
 use Google\Cloud\Tasks\V2\HttpMethod;
 use Google\Cloud\Tasks\V2\HttpRequest;
 use Google\Cloud\Tasks\V2\OidcToken;
+use Google\Cloud\Tasks\V2\PurgeQueueRequest;
 use Google\Cloud\Tasks\V2\Task;
 use Google\Protobuf\Timestamp;
 use Illuminate\Contracts\Queue\ClearableQueue;
@@ -47,17 +49,7 @@ class CloudTasksQueue extends Queue implements QueueContract, ClearableQueue
      */
     public function size($queue = null): int
     {
-        return (int) optional(
-            $this->cloudTask
-                ->cloudTaskBeta()
-                ->getQueue(
-                    $this->getQueueName($queue),
-                    [
-                        'readMask' => (new \Google\Protobuf\FieldMask())->setPaths(['stats']),
-                    ]
-                )
-                ->getStats()
-        )->getTasksCount();
+        return 0;
     }
 
     /**
@@ -139,7 +131,9 @@ class CloudTasksQueue extends Queue implements QueueContract, ClearableQueue
     {
         return tap($this->size($queue), function () use ($queue) {
             try {
-                $this->cloudTask->cloudTask()->purgeQueue($this->getQueueName($queue));
+                $this->cloudTask->cloudTask()->purgeQueue(
+                    PurgeQueueRequest::build($this->getQueueName($queue))
+                );
             } catch (ApiException $th) {
                 throw $th; // TODO: handle exception
             } finally {
@@ -148,7 +142,7 @@ class CloudTasksQueue extends Queue implements QueueContract, ClearableQueue
         });
     }
 
-    public function getQueueName(string $queue = null): string
+    public function getQueueName(?string $queue = null): string
     {
         return $this->cloudTask->cloudTask()::queueName($this->project, $this->location, $queue ?: $this->default);
     }
@@ -188,10 +182,10 @@ class CloudTasksQueue extends Queue implements QueueContract, ClearableQueue
         }
 
         try {
-            return $this->cloudTask->cloudTask()->createTask(
+            return $this->cloudTask->cloudTask()->createTask(CreateTaskRequest::build(
                 $this->getQueueName($queue),
                 $task
-            );
+            ));
         } catch (ApiException $th) {
             throw $th; // TODO: handle exception
         } finally {
