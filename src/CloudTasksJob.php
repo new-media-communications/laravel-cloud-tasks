@@ -2,6 +2,7 @@
 
 namespace Nmc\CloudTasks;
 
+use Google\Cloud\Tasks\V2\GetQueueRequest;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Jobs\Job;
@@ -77,7 +78,7 @@ class CloudTasksJob extends Job implements JobContract
             $maxAttempts = optional(
                 $this->cloudTask
                     ->cloudTask()
-                    ->getQueue($this->cloudTaskParams->fullQueueName)
+                    ->getQueue(GetQueueRequest::build($this->cloudTaskParams->fullQueueName))
                     ->getRetryConfig()
             )->getMaxAttempts();
 
