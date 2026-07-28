@@ -15,7 +15,7 @@ class CloudTasksConnector implements ConnectorInterface
     public function connect(array $config)
     {
         return new CloudTasksQueue(
-            new CloudTasksClient(CloudTaskCredentials::parse($config['credentials'])),
+            new CloudTasksClient(CloudTaskCredentials::parse($config['credentials'] ?? null)),
             $config['queue'],
             $config['project'],
             $config['location'],
