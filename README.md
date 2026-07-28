@@ -33,6 +33,8 @@ return [
         'handler_url' => env('CLOUD_TASKS_HANDLER_URL', env('APP_URL') . '/cloud-tasks-handler'),
         'credentials' => env('CLOUD_TASKS_CREDENTIALS', config_path('credentials.json')),
         'auth' => [
+            'enabled' => env('CLOUD_TASKS_AUTH_ENABLED', true),
+            'allowed_emails' => env('CLOUD_TASKS_AUTH_ALLOWED_EMAILS', null),
             'service_account_email' => env('CLOUD_TASKS_SERVICE_ACCOUNT_EMAIL'),
             'audience' => env('CLOUD_TASKS_AUDIENCE'),
         ],
@@ -40,6 +42,26 @@ return [
     ]
 ];
 ```
+
+## Authentication
+
+When `auth.enabled` is `true` (the default), each task is dispatched with an
+[OIDC token](https://cloud.google.com/tasks/docs/creating-http-target-tasks#token)
+so Google Cloud Tasks signs its request to your handler, and the
+`VerifyCloudTasksToken` middleware rejects any request that isn't signed by an
+allowed service account.
+
+| Env var | Description |
+| --- | --- |
+| `CLOUD_TASKS_AUTH_ENABLED` | Enable OIDC signing on dispatch and verification on the handler. Defaults to `true`. Set to `false` to disable auth entirely. |
+| `CLOUD_TASKS_AUTH_ALLOWED_EMAILS` | Comma-separated list of service-account emails allowed to invoke the handler. When empty, the application's own [default service account](https://cloud.google.com/docs/authentication/application-default-credentials) is used. |
+| `CLOUD_TASKS_SERVICE_ACCOUNT_EMAIL` | Service account used to mint the OIDC token when dispatching a task. Defaults to the application default credentials identity. |
+| `CLOUD_TASKS_AUDIENCE` | Audience (`aud`) claim for the OIDC token. Defaults to the handler URL. |
+
+> **Upgrading:** auth is now enabled by default. If your app relied on the
+> handler being unauthenticated, set `CLOUD_TASKS_AUTH_ENABLED=false`, or make
+> sure Application Default Credentials are available so a service-account
+> identity can be resolved on both ends.
 
 ## Credits
 

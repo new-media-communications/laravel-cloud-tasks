@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-cloud-tasks` will be documented in this file.
 
+## 3.0.0 - 2026-07-28
+
+- Added an email allowlist (`auth.allowed_emails` / `CLOUD_TASKS_AUTH_ALLOWED_EMAILS`) so the handler only accepts tasks signed by approved service accounts
+- Added `auth.enabled` (`CLOUD_TASKS_AUTH_ENABLED`) to toggle OIDC signing and verification
+- Service account email and audience now fall back to the Application Default Credentials identity and the handler URL when not explicitly configured
+- Verify OIDC tokens against Google's public keys instead of the local service-account credentials
+- **BREAKING:** authentication is now enabled by default. Set `CLOUD_TASKS_AUTH_ENABLED=false` to keep the handler unauthenticated, or ensure Application Default Credentials are available so an identity can be resolved on both ends
+
 ## 2.0.0 - 2026-03-19
 
 - Added Laravel 13 support

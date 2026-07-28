@@ -3,6 +3,8 @@
 namespace Nmc\CloudTasks;
 
 use Google\ApiCore\ApiException;
+use Google\Auth\ApplicationDefaultCredentials;
+use Google\Auth\SignBlobInterface;
 use Google\Cloud\Tasks\V2\CreateTaskRequest;
 use Google\Cloud\Tasks\V2\HttpMethod;
 use Google\Cloud\Tasks\V2\HttpRequest;
@@ -13,6 +15,7 @@ use Google\Protobuf\Timestamp;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Queue\Queue;
+use Throwable;
 
 class CloudTasksQueue extends Queue implements QueueContract, ClearableQueue
 {
@@ -210,10 +213,13 @@ class CloudTasksQueue extends Queue implements QueueContract, ClearableQueue
                 ],
             ]));
 
-        if (($email = $this->auth['service_account_email'] ?? null) && ($audience = $this->auth['audience'] ?? null)) {
+        $auth_enabled = $this->auth['enabled'] ?? null;
+        if ($auth_enabled) {
+            $email = $this->auth['service_account_email'] ?? null;
+            $audience = $this->auth['audience'] ?? null;
             $oidcToken = (new OidcToken())
-                ->setServiceAccountEmail($email)
-                ->setAudience($audience);
+                ->setServiceAccountEmail($email ?: self::defaultServiceAccountEmail())
+                ->setAudience($audience ?: $this->handlerUrl);
             $request->setOidcToken($oidcToken);
         }
 
@@ -235,5 +241,25 @@ class CloudTasksQueue extends Queue implements QueueContract, ClearableQueue
         } finally {
             $this->cloudTask->cloudTask()->close();
         }
+    }
+
+    public static function defaultServiceAccountEmail(): string
+    {
+        static $email;
+
+        if ($email !== null) {
+            return $email;
+        }
+
+        try {
+            $credentials = ApplicationDefaultCredentials::getCredentials();
+            $resolved = $credentials instanceof SignBlobInterface
+                ? $credentials->getClientName()
+                : '';
+        } catch (Throwable $th) {
+            $resolved = '';
+        }
+
+        return $email = $resolved;
     }
 }

@@ -12,6 +12,8 @@ return [
         'handler_url' => env('CLOUD_TASKS_HANDLER_URL', env('APP_URL') . '/cloud-tasks-handler'),
         'credentials' => env('CLOUD_TASKS_CREDENTIALS', config_path('credentials.json')),
         'auth' => [
+            'enabled' => env('CLOUD_TASKS_AUTH_ENABLED', true),
+            'allowed_emails' => env('CLOUD_TASKS_AUTH_ALLOWED_EMAILS', null),
             'service_account_email' => env('CLOUD_TASKS_SERVICE_ACCOUNT_EMAIL'),
             'audience' => env('CLOUD_TASKS_AUDIENCE'),
         ],

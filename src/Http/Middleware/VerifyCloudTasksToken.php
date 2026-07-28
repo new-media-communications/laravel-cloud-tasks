@@ -3,9 +3,10 @@
 namespace Nmc\CloudTasks\Http\Middleware;
 
 use Closure;
+use Google\Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Nmc\CloudTasks\CloudTaskCredentials;
+use Nmc\CloudTasks\CloudTasksQueue;
+use Throwable;
 
 class VerifyCloudTasksToken
 {
@@ -22,53 +23,57 @@ class VerifyCloudTasksToken
 
     private function verifyIdToken(Request $request): bool
     {
-        $config = $this->getConfig($request);
-
-        if (!$config) {
-            return true;
-        }
-
-        if (!($config['auth'] ?? null)) {
-            return true;
-        }
-
-        if (!($credentials = $config['credentials'] ?? null)) {
+        $connectionName = $request->input("jobConfig.connectionName");
+        if (!$connectionName) {
             return false;
         }
 
-        $client = new \Google\Client();
-        $client->setAuthConfig(CloudTaskCredentials::parse($credentials));
+        $config = config("queue.connections.{$connectionName}");
+    
+        if (!$config) {
+            return false;
+        }
+
+        $auth_config = $config['auth'] ?? null;
+
+        if (!$auth_config) {
+            return true;
+        }
+
+        if (!($auth_config['enabled'] ?? false)) {
+            return true;
+        }
+
+        $allowed_emails = array_values(
+            array_filter(
+                array_map(fn($item) => trim($item), explode(',', $auth_config['allowed_emails'] ?? ''))
+            )
+        ) ?: array_filter([CloudTasksQueue::defaultServiceAccountEmail()]);
 
         try {
-            $payload = $client->verifyIdToken($this->getToken($request));
+            $client = new Client();
+            $client->setClientId(($auth_config['audience'] ?? null) ?: $request->url());
 
-            return Arr::get($payload, 'aud') === Arr::get($config, 'auth.audience');
-        } catch (\Exception $e) {
+            $payload = $client->verifyIdToken($this->authorization($request));
+
+            if (!$payload) {
+                return false;
+            }
+
+            return in_array($payload['email'], $allowed_emails, true);
+        } catch (Throwable) {
             return false;
         }
     }
 
-    private function getToken(Request $request): ?string
+    private function authorization(Request $request): ?string
     {
         $authorization = $request->header('authorization');
+
         if (!$authorization) {
             return null;
         }
 
-        if (!is_string($authorization)) {
-            return null;
-        }
-
         return trim(str_replace('Bearer ', '', $authorization));
-    }
-
-    private function getConfig(Request $request): ?array
-    {
-        $connectionName = $request->input("jobConfig.connectionName");
-        if (!$connectionName) {
-            return null;
-        }
-
-        return config("queue.connections.{$connectionName}");
     }
 }
