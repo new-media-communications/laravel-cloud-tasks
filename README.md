@@ -43,6 +43,13 @@ return [
 ];
 ```
 
+## Credentials
+
+The `credentials` config value is optional. Set it to a service-account key file
+path (or JSON string) to authenticate explicitly, or omit it to fall back to
+[Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials)
+— the queue no longer errors when the value is absent.
+
 ## Authentication
 
 When `auth.enabled` is `true` (the default), each task is dispatched with an

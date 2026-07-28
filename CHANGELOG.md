@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-cloud-tasks` will be documented in this file.
 
+## 3.0.1 - 2026-07-28
+
+- Fixed a fatal error (`Undefined array key "credentials"`) when the `credentials` config key is omitted; the queue now falls back to Application Default Credentials in that case
+
 ## 3.0.0 - 2026-07-28
 
 - Added an email allowlist (`auth.allowed_emails` / `CLOUD_TASKS_AUTH_ALLOWED_EMAILS`) so the handler only accepts tasks signed by approved service accounts
